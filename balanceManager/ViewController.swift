@@ -22,7 +22,7 @@ class ViewController: UIViewController {
         super.viewDidAppear(true)
         loadUD()
         setBal(0)
-//        userdefaults.removeObject(forKey: "data")
+//        resetData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {

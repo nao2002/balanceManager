@@ -16,9 +16,9 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     /*カテゴリーそれぞれの詳細データ 年月とカテゴリー名で管理
      カテゴリーのその月の総計とその月の詳細のデータがそれぞれある
      ・categoryData['\(categoryName)+"_"+\(month(yyyy/MM形式))+"_sum"']の時中身は
-        [[その月の総計(String)]]なので、[0][0]のみを使用
+     [[その月の総計(String)]]なので、[0][0]のみを使用
      ・categoryData['\(categoryName)+"_"+\(month(yyyy/MM形式))']の時中身は
-        [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ],[詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ]...]といった形で増える
+     [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ,詳細1つ目日付],[詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ,詳細2つ目日付]...]といった形で増える
      おそらくこのアプリで一番データが多い。扱いに注意すべし
      */
     var categoryData: Dictionary<String,[[String]]> = [:]
@@ -26,7 +26,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     let dt = Date()
     let dateFormatter = DateFormatter()
     var month: String = ""
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         //テーブルビューの登録
@@ -64,6 +64,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         // セルを取得する
         let cell = tableView.dequeueReusableCell(withIdentifier: "customCell", for: indexPath) as! logTableViewCell
         cell.titleLabel.text = categoryList[indexPath.row]
+        cell.dateLabel.text = ""
         
         if checkCategoryExist(month: month, category: categoryList[indexPath.row]) {
             cell.priceLabel.text = "¥ " + formattePrice(balance: Int(categoryData[categoryList[indexPath.row]+"_"+month+"_sum"]![0][0])!)
@@ -85,6 +86,22 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         return cell
     }
     
+    //TableViewのセルが押された時
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // タップされたセルの行番号を出力
+        print("\(indexPath.row)番目の行が選択されました。")
+        // セルの選択を解除
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        // 別の画面に遷移
+        let next = storyboard!.instantiateViewController(withIdentifier: "detailLog")  as! detailLogViewController
+        next.modalPresentationStyle = .fullScreen
+        next.category = categoryList[indexPath.row]
+        next.categoryData = categoryData
+        next.month = month
+        present(next, animated: true, completion: nil)
+    }
+    
     //その月のカテゴリデータが存在しているか確認
     func checkCategoryExist(month:String,category:String) -> Bool{
         if categoryData.keys.contains(category+"_"+month+"_sum") {
@@ -93,7 +110,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
             return false
         }
     }
-        
+    
     //戻るボタン
     @IBAction func back() {
         dismiss(animated: true, completion: nil)
@@ -108,15 +125,15 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         let price = f.string(from: NSNumber(value: balance)) ?? "\(balance)"
         return price
     }
-
+    
     /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+     // MARK: - Navigation
+     
+     // In a storyboard-based application, you will often want to do a little preparation before navigation
+     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+     // Get the new view controller using segue.destination.
+     // Pass the selected object to the new view controller.
+     }
+     */
+    
 }

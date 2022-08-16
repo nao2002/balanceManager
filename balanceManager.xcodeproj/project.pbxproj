@@ -20,6 +20,7 @@
 		35274A3628A389FF00548F2F /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35274A3528A389FF00548F2F /* LogViewController.swift */; };
 		35370E4128A4059600BE57CC /* logTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35370E3F28A4059600BE57CC /* logTableViewCell.swift */; };
 		35370E4228A4059600BE57CC /* logTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 35370E4028A4059600BE57CC /* logTableViewCell.xib */; };
+		35F4F69D28ABCBFA00711FF5 /* detailLogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F4F69C28ABCBFA00711FF5 /* detailLogViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		35274A3528A389FF00548F2F /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		35370E3F28A4059600BE57CC /* logTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = logTableViewCell.swift; sourceTree = "<group>"; };
 		35370E4028A4059600BE57CC /* logTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = logTableViewCell.xib; sourceTree = "<group>"; };
+		35F4F69C28ABCBFA00711FF5 /* detailLogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = detailLogViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +113,7 @@
 				35274A0728A3825900548F2F /* SceneDelegate.swift */,
 				35274A0928A3825900548F2F /* ViewController.swift */,
 				35274A3528A389FF00548F2F /* LogViewController.swift */,
+				35F4F69C28ABCBFA00711FF5 /* detailLogViewController.swift */,
 				350833F728A3E23B00E05907 /* changeBalViewController.swift */,
 				35274A0B28A3825900548F2F /* Main.storyboard */,
 				35274A0E28A3825A00548F2F /* Assets.xcassets */,
@@ -275,6 +278,7 @@
 				35274A0628A3825900548F2F /* AppDelegate.swift in Sources */,
 				35274A0828A3825900548F2F /* SceneDelegate.swift in Sources */,
 				350833F828A3E23B00E05907 /* changeBalViewController.swift in Sources */,
+				35F4F69D28ABCBFA00711FF5 /* detailLogViewController.swift in Sources */,
 				35370E4128A4059600BE57CC /* logTableViewCell.swift in Sources */,
 				35274A3628A389FF00548F2F /* LogViewController.swift in Sources */,
 			);
