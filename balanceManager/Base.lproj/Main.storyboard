@@ -165,7 +165,7 @@
                                                 <action selector="cancel" destination="FBU-hz-36I" id="Q7v-QF-5og"/>
                                             </connections>
                                         </barButtonItem>
-                                        <barButtonItem key="rightBarButtonItem" title="追加" id="UyG-sm-3DW">
+                                        <barButtonItem key="rightBarButtonItem" title="保存" id="UyG-sm-3DW">
                                             <connections>
                                                 <action selector="done" destination="FBU-hz-36I" id="Rh1-Nc-qCC"/>
                                             </connections>

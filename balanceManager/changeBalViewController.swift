@@ -19,11 +19,19 @@ class changeBalViewController: UIViewController {
     let dateFormatter = DateFormatter()
     var month: String = ""
     
+    var new: Bool = true //新規作成か (以降編集時用変数)
+    var index: Int! //カテゴリーの中のindex番号
+    var titleTxt: String! //titleTextField設定用
+    var priceTxt: String! //changeTextField設定用
+    var detailTxt: String! //detailTextView設定用
+    var monthTxt: String! //monthの選択UI(WIP)設定用
+    var defaultCategory: String! //元々のカテゴリー
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM", options: 0, locale: Locale(identifier: "ja_JP"))
-        month = dateFormatter.string(from: dt)
+            dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM", options: 0, locale: Locale(identifier: "ja_JP"))
+            month = dateFormatter.string(from: dt)
         
         // Do any additional setup after loading the view.
     }
@@ -48,8 +56,16 @@ class changeBalViewController: UIViewController {
         }
         categoryButton.menu = UIMenu(options: .displayInline, children: items)
         categoryButton.showsMenuAsPrimaryAction = true
-        categoryButton.setTitle(categoryList[0], for: .normal)
-        category = categoryList[0]
+        if new {
+            categoryButton.setTitle(categoryList[0], for: .normal)
+            category = categoryList[0]
+        }else {
+            categoryButton.setTitle(categoryList[categoryList.firstIndex(of: category)!], for: .normal)
+            
+            changeTextField.text = priceTxt
+            titleTextField.text = titleTxt
+            detailTextView.text = detailTxt
+        }
     }
     
     //追加処理
@@ -60,32 +76,71 @@ class changeBalViewController: UIViewController {
                 dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "MM-dd", options: 0, locale: Locale(identifier: "ja_JP"))
                 let date: String = dateFormatter.string(from: dt)
                 var categoryData: Dictionary<String,[[String]]> = [:]
-                //dataキーのdictionary存在確認
-                if userdefaults.dictionary(forKey: "data") != nil {
-                    categoryData = userdefaults.dictionary(forKey: "data") as! Dictionary<String,[[String]]>
-                    //その月のカテゴリデータが存在している時
-                    if checkCategoryExist(month: month, category: category,categoryData: categoryData) == false {
+                //新規追加の場合
+                if new {
+                    //dataキーのdictionary存在確認
+                    if userdefaults.dictionary(forKey: "data") != nil {
+                        categoryData = userdefaults.dictionary(forKey: "data") as! Dictionary<String,[[String]]>
+                        //その月のカテゴリデータが存在していない時
+                        if checkCategoryExist(month: month, category: category,categoryData: categoryData) == false {
+                            categoryData.updateValue([[balText]], forKey: (category+"_"+month+"_sum"))
+                            categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date]], forKey: (category+"_"+month))
+                            //その月のカテゴリデータが存在している時
+                        }else {
+                            categoryData.updateValue([[String(Int(categoryData[category+"_"+month+"_sum"]![0][0])!+balance)]], forKey: category+"_"+month+"_sum")
+                            var data: [[String]] = categoryData[category+"_"+month]!
+                            data.append([titleTextField.text!,balText,detailTextView.text!,date])
+                            categoryData.updateValue(data, forKey: (category+"_"+month))
+                        }
+                        
+                        //dictionary存在してなかった時
+                    }else{
+                        print("data nil")
                         categoryData.updateValue([[balText]], forKey: (category+"_"+month+"_sum"))
                         categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date]], forKey: (category+"_"+month))
-                    //その月のカテゴリデータが存在してない時
-                    }else {
-                        categoryData.updateValue([[String(Int(categoryData[category+"_"+month+"_sum"]![0][0])!+balance)]], forKey: category+"_"+month+"_sum")
-                        var data: [[String]] = categoryData[category+"_"+month]!
-                        data.append([titleTextField.text!,balText,detailTextView.text!,date])
-                        categoryData.updateValue(data, forKey: (category+"_"+month))
                     }
                     
-                //存在してなかった時
+                    //元ビュー処理
+                    let view = self.presentingViewController as! ViewController
+                    userdefaults.set(userdefaults.integer(forKey:"bal")+balance,forKey: "bal")
+                    view.loadUD()
+                    view.setBal(0)
+                    
+                //編集の場合
                 }else{
-                    print("data nil")
-                    categoryData.updateValue([[balText]], forKey: (category+"_"+month+"_sum"))
-                    categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date]], forKey: (category+"_"+month))
+                    categoryData = userdefaults.dictionary(forKey: "data") as! Dictionary<String,[[String]]>
+                    var changedBal: Int = balance - Int(priceTxt)!
+                    //月、カテゴリーをまたいでの編集の場合
+                    if month != monthTxt || category != defaultCategory {
+                        categoryData.updateValue([[String(Int(categoryData[defaultCategory+"_"+monthTxt+"_sum"]![0][0])!-balance)]], forKey: defaultCategory+"_"+monthTxt+"_sum")
+                        changedBal = balance
+                        var data: [[String]] = categoryData[defaultCategory+"_"+monthTxt]!
+                        data.remove(at: index)
+                        categoryData.updateValue(data, forKey: (defaultCategory+"_"+monthTxt))
+                        //もし移動先のカテゴリーデータがなかった時新規に作成する
+                        if categoryData[category+"_"+month] == nil {
+                            categoryData.updateValue([["0"]], forKey: category+"_"+month+"_sum")
+                            categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date]], forKey: (category+"_"+month))
+                        }else {
+                            var newData: [[String]] = categoryData[category+"_"+month]!
+                            newData.append([titleTextField.text!,balText,detailTextView.text!,date])
+                            categoryData.updateValue(data, forKey: (category+"_"+month))
+                        }
+                        index = categoryData[category+"_"+month]!.count - 1
+                    }
+                    
+                    categoryData.updateValue([[String(Int(categoryData[category+"_"+month+"_sum"]![0][0])!+changedBal)]], forKey: category+"_"+month+"_sum")
+                    var data: [[String]] = categoryData[category+"_"+month]!
+                        data[index] = [titleTextField.text!,balText,detailTextView.text!,date]
+                    categoryData.updateValue(data, forKey: (category+"_"+month))
+
+                    let view = self.presentingViewController as! detailLogViewController
+                    //リストを日付順で並び替える関数、tableViewをリロードする関数を実行(WIP)
                 }
+
                 
                 userdefaults.set(categoryData,forKey: "data")
                 
-                let view = self.presentingViewController as! ViewController
-                view.setBal(balance)
                 dismiss(animated: true, completion: nil)
             }
         }

@@ -14,11 +14,13 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     var categoryList: [String] = [] //カテゴリー一覧の配列　文字列でカテゴリーが並ぶ(["食費","交通費"])
     
     /*カテゴリーそれぞれの詳細データ 年月とカテゴリー名で管理
-     カテゴリーのその月の総計とその月の詳細のデータがそれぞれある
+     カテゴリーのその月の総計とその月のそのカテゴリーの詳細のデータ、その月の全ての詳細データがそれぞれある
      ・categoryData['\(categoryName)+"_"+\(month(yyyy/MM形式))+"_sum"']の時中身は
      [[その月の総計(String)]]なので、[0][0]のみを使用
      ・categoryData['\(categoryName)+"_"+\(month(yyyy/MM形式))']の時中身は
      [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ,詳細1つ目日付],[詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ,詳細2つ目日付]...]といった形で増える
+     ・categoryData['\(month(yyyy/MM形式))']の時中身は
+     [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ,詳細1つ目日付,詳細1つ目カテゴリ,カテゴリ内でのIndex][詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ,詳細2つ目日付,詳細2つ目カテゴリ,カテゴリ内でのIndex]...]といった形で増える
      おそらくこのアプリで一番データが多い。扱いに注意すべし
      */
     var categoryData: Dictionary<String,[[String]]> = [:]

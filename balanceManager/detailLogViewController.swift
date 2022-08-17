@@ -14,11 +14,13 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
     var category: String = ""//現在のカテゴリー
     
     /*カテゴリーそれぞれの詳細データ 年月とカテゴリー名で管理
-     カテゴリーのその月の総計とその月の詳細のデータがそれぞれある
+     カテゴリーのその月の総計とその月のそのカテゴリーの詳細のデータ、その月の全ての詳細データがそれぞれある
      ・categoryData['\(categoryName)+"_"+\(month(yyyy/MM形式))+"_sum"']の時中身は
      [[その月の総計(String)]]なので、[0][0]のみを使用
      ・categoryData['\(categoryName)+"_"+\(month(yyyy/MM形式))']の時中身は
      [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ,詳細1つ目日付],[詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ,詳細2つ目日付]...]といった形で増える
+     ・categoryData['\(month(yyyy/MM形式))']の時中身は
+     [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ,詳細1つ目日付,詳細1つ目カテゴリ,カテゴリ内でのIndex][詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ,詳細2つ目日付,詳細2つ目カテゴリ,カテゴリ内でのIndex]...]といった形で増える
      おそらくこのアプリで一番データが多い。扱いに注意すべし
      */
     var categoryData: Dictionary<String,[[String]]> = [:]
@@ -35,6 +37,7 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
     //TableViewのセル数
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         var count: Int = 0
+        //カテゴリーのデータが存在しているか確認
         if categoryData[category+"_"+month] != nil {
             count = categoryData[category+"_"+month]!.count
         }
@@ -60,6 +63,26 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
         tableView.rowHeight = 81
         // セルに表示する値を設定する
         return cell
+    }
+    
+    //TableViewのセルが押された時
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // タップされたセルの行番号を出力
+        print("\(indexPath.row)番目の行が選択されました。")
+        // セルの選択を解除
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        // 別の画面に遷移
+        let next = storyboard!.instantiateViewController(withIdentifier: "changeBal")  as! changeBalViewController
+        next.new = false
+        next.index = indexPath.row
+        next.category = category
+        next.monthTxt = month
+        next.titleTxt = categoryData[category+"_"+month]![indexPath.row][0]
+        next.priceTxt = categoryData[category+"_"+month]![indexPath.row][1]
+        next.detailTxt = categoryData[category+"_"+month]![indexPath.row][2]
+        next.defaultCategory = category
+        present(next, animated: true, completion: nil)
     }
     
     //引数の数字を表示に,をつけて文字列で返す(1000 -> "1,000")

@@ -23,6 +23,7 @@ class ViewController: UIViewController {
         loadUD()
         setBal(0)
 //        resetData()
+        print("viewdidappear")
     }
     
     override func viewWillDisappear(_ animated: Bool) {
