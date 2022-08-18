@@ -128,6 +128,10 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         return price
     }
     
+    func reloadTable() {
+        tableView.reloadData()
+    }
+    
     /*
      // MARK: - Navigation
      

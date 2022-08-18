@@ -127,15 +127,20 @@ class changeBalViewController: UIViewController {
                             categoryData.updateValue(data, forKey: (category+"_"+month))
                         }
                         index = categoryData[category+"_"+month]!.count - 1
+                        userdefaults.set(userdefaults.integer(forKey: "bal")-changedBal,forKey: "bal")
                     }
                     
                     categoryData.updateValue([[String(Int(categoryData[category+"_"+month+"_sum"]![0][0])!+changedBal)]], forKey: category+"_"+month+"_sum")
                     var data: [[String]] = categoryData[category+"_"+month]!
                         data[index] = [titleTextField.text!,balText,detailTextView.text!,date]
                     categoryData.updateValue(data, forKey: (category+"_"+month))
+                    
+                    userdefaults.set(userdefaults.integer(forKey: "bal")+changedBal,forKey: "bal")
 
                     let view = self.presentingViewController as! detailLogViewController
-                    //リストを日付順で並び替える関数、tableViewをリロードする関数を実行(WIP)
+                    view.categoryData = categoryData
+                    view.reloadTable()
+                    //リストを日付順で並び替える関数を実行(WIP)
                 }
 
                 

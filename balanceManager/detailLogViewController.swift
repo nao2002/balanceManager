@@ -27,6 +27,8 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
     
     var month: String = ""
     
+    var changed: Bool = false //データが編集されたか
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(UINib(nibName: "logTableViewCell", bundle: nil), forCellReuseIdentifier: "customCell")
@@ -96,7 +98,16 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     @IBAction func back() {
+        if changed {
+            let view = self.presentingViewController as! LogViewController
+            view.reloadTable()
+        }
         dismiss(animated: true, completion: nil)
+    }
+    
+    func reloadTable() {
+        changed = true
+        tableView.reloadData()
     }
     
     /*

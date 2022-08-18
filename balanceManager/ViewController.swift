@@ -20,9 +20,9 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
+//        resetData()
         loadUD()
         setBal(0)
-//        resetData()
         print("viewdidappear")
     }
     
