@@ -11,7 +11,7 @@ class ViewController: UIViewController {
     var userdefaults = UserDefaults.standard
     @IBOutlet weak var balButton: UIButton!
     var balance: Int = 0 //残高総計
-    var payDay: Int = 25 //切り替え日(この日から次の月扱い)
+    var payDay: Int = 1 //切り替え日(この日から次の月扱い)
 
     override func viewDidLoad() {
         super.viewDidLoad()

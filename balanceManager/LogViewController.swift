@@ -9,6 +9,7 @@ import UIKit
 
 class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var monthButton: UIButton!
     var userdefaults = UserDefaults.standard
     
     var categoryList: [String] = [] //カテゴリー一覧の配列　文字列でカテゴリーが並ぶ(["食費","交通費"])
@@ -36,6 +37,8 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         //日付のフォーマット設定
         dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM", options: 0, locale: Locale(identifier: "ja_JP"))
         month = dateFormatter.string(from: dt)
+        
+        monthButton.setTitle(month, for: .normal)
         // Do any additional setup after loading the view.
     }
     
@@ -99,6 +102,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         let next = storyboard!.instantiateViewController(withIdentifier: "detailLog")  as! detailLogViewController
         next.modalPresentationStyle = .fullScreen
         next.category = categoryList[indexPath.row]
+        next.categoryList = categoryList
         next.categoryData = categoryData
         next.month = month
         present(next, animated: true, completion: nil)
@@ -118,6 +122,29 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         dismiss(animated: true, completion: nil)
     }
     
+    @IBAction func previousMonth() {
+        if Int(month.suffix(2)) == 1 {
+            month = "\(String(format: "%04d", Int(month.prefix(4))!-1))/12"
+        }else{
+            month = "\(String(month.prefix(4)))/\(String(format: "%02d", Int(month.suffix(2))!-1))"
+        }
+        reloadTable()
+    }
+    
+    @IBAction func nextMonth() {
+        let nowMonth = dateFormatter.string(from: dt)
+        if month == nowMonth {
+            back()
+        }else{
+            if Int(month.suffix(2)) == 12 {
+                month = "\(String(format: "%04d", Int(month.prefix(4))!+1))/01"
+            }else{
+                month = "\(String(month.prefix(4)))/\(String(format: "%02d", Int(month.suffix(2))!+1))"
+            }
+            reloadTable()
+        }
+    }
+    
     //引数の数字を表示に,をつけて文字列で返す(1000 -> "1,000")
     func formattePrice(balance: Int) -> String {
         let f = NumberFormatter()
@@ -130,6 +157,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     
     func reloadTable() {
         tableView.reloadData()
+        monthButton.setTitle(month, for: .normal)
     }
     
     /*

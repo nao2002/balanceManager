@@ -239,6 +239,9 @@
                                 <buttonConfiguration key="configuration" style="plain" title="前の月 &gt;">
                                     <fontDescription key="titleFontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                 </buttonConfiguration>
+                                <connections>
+                                    <action selector="previousMonth" destination="9kb-lF-AGD" eventType="touchUpInside" id="etH-Pr-RGu"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="siB-NP-oC0">
                                 <rect key="frame" x="16" y="563" width="84" height="84"/>
@@ -255,15 +258,19 @@
                                 <rect key="frame" x="0.0" y="40" width="71" height="28"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="&lt; 前の月">
+                                <buttonConfiguration key="configuration" style="plain" title="&lt; 次の月">
                                     <fontDescription key="titleFontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                 </buttonConfiguration>
+                                <connections>
+                                    <action selector="nextMonth" destination="9kb-lF-AGD" eventType="touchUpInside" id="EDC-ho-8mJ"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="1jz-wO-3jI"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <connections>
+                        <outlet property="monthButton" destination="URT-kT-Pw8" id="l0t-r7-maz"/>
                         <outlet property="tableView" destination="qZg-TE-hUE" id="Cvj-0j-XBm"/>
                     </connections>
                 </viewController>

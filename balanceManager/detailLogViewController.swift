@@ -12,6 +12,7 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
     @IBOutlet weak var categoryNameButton: UIButton!
     var userdefaults = UserDefaults.standard
     var category: String = ""//現在のカテゴリー
+    var categoryList: [String]! //カテゴリーの一覧
     
     /*カテゴリーそれぞれの詳細データ 年月とカテゴリー名で管理
      カテゴリーのその月の総計とその月のそのカテゴリーの詳細のデータ、その月の全ての詳細データがそれぞれある
@@ -32,8 +33,20 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(UINib(nibName: "logTableViewCell", bundle: nil), forCellReuseIdentifier: "customCell")
-        categoryNameButton.setTitle("\(month)-\(category)", for: .normal)
         // Do any additional setup after loading the view.
+        
+        //カテゴリー変更ボタン設定
+        var items: [UIAction] = []
+        for i in 0..<categoryList.count {
+            items.append(UIAction(title: categoryList[i], handler: { _ in
+                self.category = self.categoryList[i]
+                self.categoryNameButton.setTitle("\(self.month)-\(self.categoryList[i])", for: .normal)
+                self.reloadTable()
+            }))
+        }
+        categoryNameButton.menu = UIMenu(options: .displayInline, children: items)
+        categoryNameButton.showsMenuAsPrimaryAction = true
+        categoryNameButton.setTitle("\(month)-\(category)", for: .normal)
     }
     
     //TableViewのセル数
