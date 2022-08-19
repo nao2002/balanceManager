@@ -92,7 +92,8 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
         next.new = false
         next.index = indexPath.row
         next.category = category
-        next.monthTxt = month
+        next.monthTxt = ("\(String(month.prefix(4)))/\(String(month.suffix(2)))/\(String(categoryData[category+"_"+month]![indexPath.row][3].suffix(2)))")
+        next.defaultMonth = month
         next.titleTxt = categoryData[category+"_"+month]![indexPath.row][0]
         next.priceTxt = categoryData[category+"_"+month]![indexPath.row][1]
         next.detailTxt = categoryData[category+"_"+month]![indexPath.row][2]

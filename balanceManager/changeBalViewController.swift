@@ -11,6 +11,7 @@ class changeBalViewController: UIViewController {
     @IBOutlet weak var changeTextField: UITextField! //収支入力用テキストボックス
     @IBOutlet weak var titleTextField: UITextField! //タイトル用テキストボックス
     @IBOutlet weak var categoryButton: UIButton! //カテゴリー選択ボタン
+    @IBOutlet weak var dateTextField: UITextField! //日付指定用テキストボックス
     @IBOutlet weak var detailTextView: UITextView! //詳細メモ記述用ボックス
     var userdefaults = UserDefaults.standard
     var categoryList: [String] = [""] //カテゴリー一覧
@@ -18,13 +19,15 @@ class changeBalViewController: UIViewController {
     let dt = Date()
     let dateFormatter = DateFormatter()
     var month: String = ""
+    var datePicker = UIDatePicker() //日付選択用DatePicker
     
     var new: Bool = true //新規作成か (以降編集時用変数)
     var index: Int! //カテゴリーの中のindex番号
     var titleTxt: String! //titleTextField設定用
     var priceTxt: String! //changeTextField設定用
     var detailTxt: String! //detailTextView設定用
-    var monthTxt: String! //monthの選択UI(WIP)設定用
+    var monthTxt: String! //monthの選択UIタイトル設定用
+    var defaultMonth: String! //編集前monthデータ
     var defaultCategory: String! //元々のカテゴリー
     
     override func viewDidLoad() {
@@ -33,6 +36,26 @@ class changeBalViewController: UIViewController {
             dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM", options: 0, locale: Locale(identifier: "ja_JP"))
             month = dateFormatter.string(from: dt)
         
+        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 35))
+        let spacelItem = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
+        let doneItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(dateSelected))
+                toolbar.setItems([spacelItem, doneItem], animated: true)
+        let formatter = DateFormatter()
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM-dd", options: 0, locale: Locale(identifier: "ja_JP"))
+        if (new) {
+        datePicker.date = formatter.date(from: formatter.string(from: dt))!
+        }else{
+            datePicker.date = formatter.date(from: monthTxt)!
+        }
+        datePicker.datePickerMode = .date
+        datePicker.preferredDatePickerStyle = .wheels
+        dateTextField.inputView = datePicker
+        dateTextField.inputAccessoryView = toolbar
+        if new {
+        dateTextField.text = formatter.string(from: dt)
+        }else {
+            dateTextField.text = monthTxt
+        }
         // Do any additional setup after loading the view.
     }
     
@@ -40,7 +63,7 @@ class changeBalViewController: UIViewController {
         super.viewWillAppear(animated)
         // UserDefault読み込み
         if userdefaults.array(forKey: "category") == nil {
-            categoryList = ["食費","交通費","日用品費","医療費","雑費"]
+            categoryList = ["収入","食費","交通費","日用品費","医療費","雑費"]
             userdefaults.set(categoryList,forKey: "category")
         }else{
             categoryList = userdefaults.array(forKey: "category") as! [String]
@@ -70,11 +93,16 @@ class changeBalViewController: UIViewController {
     
     //追加処理
     @IBAction func done() {
+        if dateTextField.isEditing {
+            if dateSelected() == false {
+                return
+            }
+        }
         if changeTextField.text != "" && titleTextField.text != "" {
             let balText: String = changeTextField.text!
             if let balance = Int(balText) {
                 dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "MM-dd", options: 0, locale: Locale(identifier: "ja_JP"))
-                let date: String = dateFormatter.string(from: dt)
+                let date: String = String(dateTextField.text!.suffix(5))
                 var categoryData: Dictionary<String,[[String]]> = [:]
                 //新規追加の場合
                 if new {
@@ -111,12 +139,12 @@ class changeBalViewController: UIViewController {
                     categoryData = userdefaults.dictionary(forKey: "data") as! Dictionary<String,[[String]]>
                     var changedBal: Int = balance - Int(priceTxt)!
                     //月、カテゴリーをまたいでの編集の場合
-                    if month != monthTxt || category != defaultCategory {
-                        categoryData.updateValue([[String(Int(categoryData[defaultCategory+"_"+monthTxt+"_sum"]![0][0])!-balance)]], forKey: defaultCategory+"_"+monthTxt+"_sum")
+                    if month != defaultMonth || category != defaultCategory {
+                        categoryData.updateValue([[String(Int(categoryData[defaultCategory+"_"+defaultMonth!+"_sum"]![0][0])!-Int(priceTxt)!)]], forKey: defaultCategory+"_"+defaultMonth+"_sum")
                         changedBal = balance
-                        var data: [[String]] = categoryData[defaultCategory+"_"+monthTxt]!
+                        var data: [[String]] = categoryData[defaultCategory+"_"+defaultMonth]!
                         data.remove(at: index)
-                        categoryData.updateValue(data, forKey: (defaultCategory+"_"+monthTxt))
+                        categoryData.updateValue(data, forKey: (defaultCategory+"_"+defaultMonth))
                         //もし移動先のカテゴリーデータがなかった時新規に作成する
                         if categoryData[category+"_"+month] == nil {
                             categoryData.updateValue([["0"]], forKey: category+"_"+month+"_sum")
@@ -124,7 +152,7 @@ class changeBalViewController: UIViewController {
                         }else {
                             var newData: [[String]] = categoryData[category+"_"+month]!
                             newData.append([titleTextField.text!,balText,detailTextView.text!,date])
-                            categoryData.updateValue(data, forKey: (category+"_"+month))
+                            categoryData.updateValue(newData, forKey: (category+"_"+month))
                         }
                         index = categoryData[category+"_"+month]!.count - 1
                         userdefaults.set(userdefaults.integer(forKey: "bal")-changedBal,forKey: "bal")
@@ -163,6 +191,40 @@ class changeBalViewController: UIViewController {
         }else{
             return false
         }
+    }
+    
+    //日付選択Pickerの完了ボタンを押した時
+    @objc func dateSelected() -> Bool {
+        //選択した日付(年、月、日)と現在の日付(年、月、日)を取得
+        let formatter = DateFormatter()
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM-dd", options: 0, locale: Locale(identifier: "ja_JP"))
+        var date: String = formatter.string(from: datePicker.date)
+        let selectedYear: String = String(date.prefix(4))
+        let selectedMonth: String = String(date.prefix(7).suffix(2))
+        let selectedDay: String = String(date.suffix(2))
+        let nowDate: String = formatter.string(from: dt)
+        let nowYear: String = String(nowDate.prefix(4))
+        let nowMonth: String = String(nowDate.prefix(7).suffix(2))
+        let nowDay: String = String(nowDate.suffix(2))
+        //もし選択した日付が未来の日付だったら
+        if (Int(selectedYear)! > Int(nowYear)!) || (Int(selectedYear)! == Int(nowYear)! && Int(selectedMonth)! > Int(nowMonth)!) || (Int(selectedYear)! == Int(nowYear)! && Int(selectedMonth)! == Int(nowMonth)! && Int(selectedDay)! > Int(nowDay)!) {
+            //現在の日付か編集前の日付に設定する
+            if (new) {
+            date = formatter.string(from: dt)
+            datePicker.date = formatter.date(from: formatter.string(from: dt))!
+            }else{
+                datePicker.date = formatter.date(from: monthTxt)!
+            }
+            return false
+        }else{
+            //日付を反映する
+            datePicker.date = formatter.date(from: date)!
+            dateTextField.text = date
+            month = String(date.prefix(7))
+            self.view.endEditing(true)
+            return true
+        }
+        
     }
     
     
