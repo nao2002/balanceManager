@@ -33,17 +33,17 @@ class changeBalViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-            dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM", options: 0, locale: Locale(identifier: "ja_JP"))
-            month = dateFormatter.string(from: dt)
+        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM", options: 0, locale: Locale(identifier: "ja_JP"))
+        month = dateFormatter.string(from: dt)
         
         let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 35))
         let spacelItem = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
         let doneItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(dateSelected))
-                toolbar.setItems([spacelItem, doneItem], animated: true)
+        toolbar.setItems([spacelItem, doneItem], animated: true)
         let formatter = DateFormatter()
         formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyy-MM-dd", options: 0, locale: Locale(identifier: "ja_JP"))
         if (new) {
-        datePicker.date = formatter.date(from: formatter.string(from: dt))!
+            datePicker.date = formatter.date(from: formatter.string(from: dt))!
         }else{
             datePicker.date = formatter.date(from: monthTxt)!
         }
@@ -52,7 +52,7 @@ class changeBalViewController: UIViewController {
         dateTextField.inputView = datePicker
         dateTextField.inputAccessoryView = toolbar
         if new {
-        dateTextField.text = formatter.string(from: dt)
+            dateTextField.text = formatter.string(from: dt)
         }else {
             dateTextField.text = monthTxt
         }
@@ -63,7 +63,7 @@ class changeBalViewController: UIViewController {
         super.viewWillAppear(animated)
         // UserDefault読み込み
         if userdefaults.array(forKey: "category") == nil {
-            categoryList = ["収入","食費","交通費","日用品費","医療費","雑費"]
+            categoryList = ["総計","収入","食費","交通費","日用品費","医療費","雑費"]
             userdefaults.set(categoryList,forKey: "category")
         }else{
             categoryList = userdefaults.array(forKey: "category") as! [String]
@@ -72,16 +72,18 @@ class changeBalViewController: UIViewController {
         //カテゴリー選択ボタン設定
         var items: [UIAction] = []
         for i in 0..<categoryList.count {
-            items.append(UIAction(title: categoryList[i], handler: { _ in
-                self.category = self.categoryList[i]
-                self.categoryButton.setTitle((self.categoryList[i]), for: .normal)
-            }))
+            if i != 0 {
+                items.append(UIAction(title: categoryList[i], handler: { _ in
+                    self.category = self.categoryList[i]
+                    self.categoryButton.setTitle((self.categoryList[i]), for: .normal)
+                }))
+            }
         }
         categoryButton.menu = UIMenu(options: .displayInline, children: items)
         categoryButton.showsMenuAsPrimaryAction = true
         if new {
-            categoryButton.setTitle(categoryList[0], for: .normal)
-            category = categoryList[0]
+            categoryButton.setTitle(categoryList[1], for: .normal)
+            category = categoryList[1]
         }else {
             categoryButton.setTitle(categoryList[categoryList.firstIndex(of: category)!], for: .normal)
             
@@ -113,12 +115,26 @@ class changeBalViewController: UIViewController {
                         if checkCategoryExist(month: month, category: category,categoryData: categoryData) == false {
                             categoryData.updateValue([[balText]], forKey: (category+"_"+month+"_sum"))
                             categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date]], forKey: (category+"_"+month))
+                            //総計データがあるか確認
+                            if categoryData.keys.contains("総計_"+month) {
+                                print("総計データ存在")
+                                var data: [[String]] = categoryData["総計_"+month]!
+                                data.append( [titleTextField.text!,balText,detailTextView.text!,date,category,"0"])
+                                categoryData.updateValue(data, forKey: "総計_"+month)
+                                //総計データがない場合
+                            }else{
+                                categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date,category,"0"]], forKey: "総計_"+month)
+                            }
+                            
                             //その月のカテゴリデータが存在している時
                         }else {
                             categoryData.updateValue([[String(Int(categoryData[category+"_"+month+"_sum"]![0][0])!+balance)]], forKey: category+"_"+month+"_sum")
                             var data: [[String]] = categoryData[category+"_"+month]!
                             data.append([titleTextField.text!,balText,detailTextView.text!,date])
                             categoryData.updateValue(data, forKey: (category+"_"+month))
+                            data = categoryData["総計_"+month]!
+                            data.append( [titleTextField.text!,balText,detailTextView.text!,date,category,String(categoryData[category+"_"+month]!.count-1)])
+                            categoryData.updateValue(data, forKey: "総計_"+month)
                         }
                         
                         //dictionary存在してなかった時
@@ -126,6 +142,7 @@ class changeBalViewController: UIViewController {
                         print("data nil")
                         categoryData.updateValue([[balText]], forKey: (category+"_"+month+"_sum"))
                         categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date]], forKey: (category+"_"+month))
+                        categoryData.updateValue([[titleTextField.text!,balText,detailTextView.text!,date,category,"0"]], forKey: "総計_"+month)
                     }
                     
                     //元ビュー処理
@@ -134,9 +151,22 @@ class changeBalViewController: UIViewController {
                     view.loadUD()
                     view.setBal(0)
                     
-                //編集の場合
+                    //編集の場合
                 }else{
                     categoryData = userdefaults.dictionary(forKey: "data") as! Dictionary<String,[[String]]>
+                    
+                    //総計データ内の該当データを探す
+                    var sumIndex: Int = -1
+                    for i in 0..<categoryData["総計_"+defaultMonth]!.count {
+                        if (categoryData["総計_"+defaultMonth]![i].contains(String(index)) && (categoryData["総計_"+defaultMonth]![i].contains(defaultCategory))) {
+                            sumIndex = i
+                            break
+                        }
+                    }
+                    if sumIndex == -1 {
+                        print("error 総計内にデータが見つかりませんでした")
+                    }
+                    print("sumIndex:\(sumIndex)")
                     var changedBal: Int = balance - Int(priceTxt)!
                     //月、カテゴリーをまたいでの編集の場合
                     if month != defaultMonth || category != defaultCategory {
@@ -156,21 +186,37 @@ class changeBalViewController: UIViewController {
                         }
                         index = categoryData[category+"_"+month]!.count - 1
                         userdefaults.set(userdefaults.integer(forKey: "bal")-changedBal,forKey: "bal")
+                        if month != defaultMonth {
+                            if categoryData["総計_"+month] == nil {
+                                categoryData.updateValue([], forKey: "総計_"+month)
+                            }
+                            data = categoryData["総計_"+month]!
+                            data.append(categoryData["総計_"+defaultMonth]![sumIndex])
+                            categoryData.updateValue(data, forKey: "総計_"+month)
+                            data = categoryData["総計_"+defaultMonth]!
+                            data.remove(at: sumIndex)
+                            categoryData.updateValue(data, forKey: "総計_"+defaultMonth)
+                            sumIndex = categoryData["総計_"+month]!.count-1
+                        }
                     }
                     
                     categoryData.updateValue([[String(Int(categoryData[category+"_"+month+"_sum"]![0][0])!+changedBal)]], forKey: category+"_"+month+"_sum")
                     var data: [[String]] = categoryData[category+"_"+month]!
-                        data[index] = [titleTextField.text!,balText,detailTextView.text!,date]
+                    data[index] = [titleTextField.text!,balText,detailTextView.text!,date]
                     categoryData.updateValue(data, forKey: (category+"_"+month))
                     
+                    data = categoryData["総計_"+month]!
+                    data[sumIndex] = [titleTextField.text!,balText,detailTextView.text!,date,category,String(index)]
+                    categoryData.updateValue(data, forKey: "総計_"+month)
+                    
                     userdefaults.set(userdefaults.integer(forKey: "bal")+changedBal,forKey: "bal")
-
+                    
                     let view = self.presentingViewController as! detailLogViewController
                     view.categoryData = categoryData
                     view.reloadTable()
                     //リストを日付順で並び替える関数を実行(WIP)
                 }
-
+                
                 
                 userdefaults.set(categoryData,forKey: "data")
                 
@@ -210,8 +256,8 @@ class changeBalViewController: UIViewController {
         if (Int(selectedYear)! > Int(nowYear)!) || (Int(selectedYear)! == Int(nowYear)! && Int(selectedMonth)! > Int(nowMonth)!) || (Int(selectedYear)! == Int(nowYear)! && Int(selectedMonth)! == Int(nowMonth)! && Int(selectedDay)! > Int(nowDay)!) {
             //現在の日付か編集前の日付に設定する
             if (new) {
-            date = formatter.string(from: dt)
-            datePicker.date = formatter.date(from: formatter.string(from: dt))!
+                date = formatter.string(from: dt)
+                datePicker.date = formatter.date(from: formatter.string(from: dt))!
             }else{
                 datePicker.date = formatter.date(from: monthTxt)!
             }

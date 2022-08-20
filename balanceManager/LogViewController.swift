@@ -49,7 +49,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         if userdefaults.array(forKey: "category") != nil {
             categoryList = userdefaults.array(forKey: "category") as! [String]
         }else {
-            categoryList = ["食費","交通費","日用品費","医療費","雑費"]
+            categoryList = ["総計","収入","食費","交通費","日用品費","医療費","雑費"]
             userdefaults.set(categoryList,forKey: "category")
         }
         if userdefaults.dictionary(forKey: "data") != nil {
@@ -68,9 +68,30 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // セルを取得する
         let cell = tableView.dequeueReusableCell(withIdentifier: "customCell", for: indexPath) as! logTableViewCell
-        cell.titleLabel.text = categoryList[indexPath.row]
         cell.dateLabel.text = ""
         
+        //もし1つ目の場合は総計データを表示する
+        if indexPath.row == 0 {
+            var sumMoney: Int = 0
+            for i in 0..<categoryList.count {
+                if i != 0 {
+                if checkCategoryExist(month: month, category: categoryList[i]) {
+                    sumMoney += Int(categoryData[categoryList[i]+"_"+month+"_sum"]![0][0])!
+                }
+                }
+            }
+            cell.titleLabel.text = "総計"
+            cell.priceLabel.text = "¥ " + formattePrice(balance: sumMoney)
+            if sumMoney > 0 {
+                cell.priceLabel.textColor = UIColor.systemGreen
+            }else if sumMoney == 0{
+                cell.priceLabel.textColor = UIColor.black
+            }else{
+                cell.priceLabel.textColor = UIColor.red
+            }
+        }else{
+        
+        cell.titleLabel.text = categoryList[indexPath.row]
         if checkCategoryExist(month: month, category: categoryList[indexPath.row]) {
             cell.priceLabel.text = "¥ " + formattePrice(balance: Int(categoryData[categoryList[indexPath.row]+"_"+month+"_sum"]![0][0])!)
             if Int(categoryData[categoryList[indexPath.row]+"_"+month+"_sum"]![0][0])! > 0 {
@@ -85,6 +106,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
             cell.priceLabel.text = "¥ 0"
             cell.priceLabel.textColor = UIColor.black
         }
+        }
         
         tableView.rowHeight = 81
         // セルに表示する値を設定する
@@ -97,7 +119,7 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
         print("\(indexPath.row)番目の行が選択されました。")
         // セルの選択を解除
         tableView.deselectRow(at: indexPath, animated: true)
-        
+                
         // 別の画面に遷移
         let next = storyboard!.instantiateViewController(withIdentifier: "detailLog")  as! detailLogViewController
         next.modalPresentationStyle = .fullScreen

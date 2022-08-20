@@ -37,7 +37,7 @@ class ViewController: UIViewController {
         if userdefaults.integer(forKey: "payDay") != 0 {
             payDay = userdefaults.integer(forKey: "payDay")
         }else{
-            payDay = 25
+            payDay = 1
             userdefaults.set(payDay, forKey: "payDay")
         }
     }

@@ -20,7 +20,7 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
      [[その月の総計(String)]]なので、[0][0]のみを使用
      ・categoryData['\(categoryName)+"_"+\(month(yyyy/MM形式))']の時中身は
      [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ,詳細1つ目日付],[詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ,詳細2つ目日付]...]といった形で増える
-     ・categoryData['\(month(yyyy/MM形式))']の時中身は
+     ・categoryData['"総計"+"_"+\(month(yyyy/MM形式))']の時中身は
      [[詳細1つ目タイトル,詳細1つ目値段,詳細1つ目メモ,詳細1つ目日付,詳細1つ目カテゴリ,カテゴリ内でのIndex][詳細2つ目タイトル,詳細2つ目値段,詳細2つ目メモ,詳細2つ目日付,詳細2つ目カテゴリ,カテゴリ内でのIndex]...]といった形で増える
      おそらくこのアプリで一番データが多い。扱いに注意すべし
      */
@@ -90,14 +90,20 @@ class detailLogViewController: UIViewController, UITableViewDelegate, UITableVie
         // 別の画面に遷移
         let next = storyboard!.instantiateViewController(withIdentifier: "changeBal")  as! changeBalViewController
         next.new = false
-        next.index = indexPath.row
-        next.category = category
         next.monthTxt = ("\(String(month.prefix(4)))/\(String(month.suffix(2)))/\(String(categoryData[category+"_"+month]![indexPath.row][3].suffix(2)))")
         next.defaultMonth = month
         next.titleTxt = categoryData[category+"_"+month]![indexPath.row][0]
         next.priceTxt = categoryData[category+"_"+month]![indexPath.row][1]
         next.detailTxt = categoryData[category+"_"+month]![indexPath.row][2]
-        next.defaultCategory = category
+        if category == "総計" {
+            next.category = categoryData[category+"_"+month]![indexPath.row][4]
+            next.index = Int(categoryData[category+"_"+month]![indexPath.row][5])!
+            next.defaultCategory = categoryData[category+"_"+month]![indexPath.row][4]
+        }else{
+            next.index = indexPath.row
+            next.category = category
+            next.defaultCategory = category
+        }
         present(next, animated: true, completion: nil)
     }
     
