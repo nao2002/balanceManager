@@ -152,7 +152,6 @@ class ViewController: UIViewController {
             balance = replaceBalance
             payDay = replacePayDay
             setBal(0)
-            loadUD()
         }catch{
             print("error loading data")
             let alert: UIAlertController = UIAlertController(title: "読み込み失敗", message: "データの読み込み時にエラーが発生しました", preferredStyle: .alert)
