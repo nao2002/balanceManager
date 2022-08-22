@@ -155,6 +155,11 @@ class ViewController: UIViewController {
             loadUD()
         }catch{
             print("error loading data")
+            let alert: UIAlertController = UIAlertController(title: "読み込み失敗", message: "データの読み込み時にエラーが発生しました", preferredStyle: .alert)
+            let alertAction1 = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(alertAction1)
+            self.present(alert, animated: true, completion: nil)
+            return
         }
         print(fileContents)
         setUD()
