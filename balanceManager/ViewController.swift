@@ -12,7 +12,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var balButton: UIButton!
     var balance: Int = 0 //残高総計
     var payDay: Int = 1 //切り替え日(この日から次の月扱い)
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -74,14 +74,96 @@ class ViewController: UIViewController {
         present(next, animated: true, completion: nil)
     }
     
-    //カテゴリー編集
-    @IBAction func manageCategory() {
-        print("push category")
+    //データ出力
+    @IBAction func exportData() {
+        if userdefaults.dictionary(forKey: "data") != nil {
+            let documentDirectoryUrl = FileManager.default.urls( for: .documentDirectory, in: .userDomainMask ).first!
+            let fileUrl = documentDirectoryUrl.appendingPathComponent("data.txt")
+            var savedData: String = "\(balance),\(payDay),{"
+            let dicData: Dictionary<String,[[String]]> = userdefaults.dictionary(forKey: "data") as! Dictionary<String,[[String]]>
+            for key in dicData.keys {
+                savedData += "\"\(String(key))\":"
+                var strData = "["
+                for i in 0..<dicData[key]!.count {
+                    strData += "\(dicData[key]![i])"
+                    if i != dicData[key]!.count-1 {
+                        strData += ","
+                    }
+                }
+                savedData += strData + "],"
+            }
+            savedData.removeLast(1)
+            savedData += "}"
+            print(savedData)
+            try! savedData.data(using: .utf8)!.write(to: fileUrl, options: .atomic)
+            
+            let alert: UIAlertController = UIAlertController(title: "出力完了", message: "データの出力が完了しました", preferredStyle: .alert)
+            let alertAction1 = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(alertAction1)
+            self.present(alert, animated: true, completion: nil)
+        }else{
+            let alert: UIAlertController = UIAlertController(title: "出力失敗", message: "データが存在しません\n出力に失敗しました", preferredStyle: .alert)
+            let alertAction1 = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(alertAction1)
+            self.present(alert, animated: true, completion: nil)
+        }
     }
     
-    //切り替え日変更
-    @IBAction func managePayDay() {
-        print("push payday")
+    @IBAction func readDataButton() {
+        
+        /// ①DocumentsフォルダURL取得
+        guard let dirURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("フォルダ取得エラー")
+            return
+        }
+        
+        /// ②対象のファイルURL取得
+        let fileURL = dirURL.appendingPathComponent("data.txt")
+        
+        /// ③ファイルの読み込み
+        guard var fileContents = try? String(contentsOf: fileURL) else {
+            print("ファイル取得エラー")
+            return
+        }
+        
+        let alert: UIAlertController = UIAlertController(title: "確認", message: "データを読み込みます\n元々のデータは上書きされます\n本当によろしいですか？", preferredStyle: .alert)
+        let alertAction1 = UIAlertAction(title: "OK", style: .default, handler: {_ in self.readData(data: fileContents)})
+        let alertAction2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alert.addAction(alertAction1)
+        alert.addAction(alertAction2)
+        self.present(alert, animated: true, completion: nil)
+        
+        }
+    
+    func readData(data: String) {
+        var fileContents = data
+        var textIndex = fileContents.firstIndex(of: ",")
+        let replaceBalance = Int(String(fileContents.prefix(textIndex!.utf16Offset(in: fileContents))))!
+        
+        fileContents = String(fileContents.suffix(fileContents.count-textIndex!.utf16Offset(in: fileContents)-1))
+        textIndex = fileContents.firstIndex(of: ",")
+        let replacePayDay = Int(String(fileContents.prefix(textIndex!.utf16Offset(in: fileContents))))!
+        
+        fileContents = String(fileContents.suffix(fileContents.count-textIndex!.utf16Offset(in: fileContents)-1))
+        let dicData = fileContents.data(using: .utf8)!
+        do {
+            let dic = try JSONSerialization.jsonObject(with: dicData) as? [String:Any]
+            userdefaults.set(dic, forKey: "data")
+            balance = replaceBalance
+            payDay = replacePayDay
+            setBal(0)
+            loadUD()
+        }catch{
+            print("error loading data")
+        }
+        print(fileContents)
+        setUD()
+        
+        let alert: UIAlertController = UIAlertController(title: "読み込み完了", message: "データの読み込みが完了しました", preferredStyle: .alert)
+        let alertAction1 = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(alertAction1)
+        self.present(alert, animated: true, completion: nil)
+
     }
     
     
@@ -92,6 +174,6 @@ class ViewController: UIViewController {
         userdefaults.removeObject(forKey: "category")
         userdefaults.removeObject(forKey: "data")
     }
-
-
+    
+    
 }

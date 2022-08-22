@@ -4,6 +4,10 @@
 <dict>
 	<key></key>
 	<string></string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>ja</string>
